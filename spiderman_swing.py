@@ -55,6 +55,15 @@ class Building:
 
 
 @dataclass
+class FloatingAnchor:
+    """Flying anchor points for swinging in the air"""
+    x: float
+    y: float
+    char: str = '☁'  # Cloud platform
+    color: int = 8
+
+
+@dataclass
 class SpiderMan:
     x: float
     y: float
@@ -99,6 +108,7 @@ class SpidermanGame:
 
         self.spiderman = None
         self.buildings: List[Building] = []
+        self.floating_anchors: List[FloatingAnchor] = []
         self.particles: List[Particle] = []
         self.camera_x = 0
         self.frame_count = 0
@@ -157,23 +167,24 @@ class SpidermanGame:
             curses.init_pair(15, curses.COLOR_YELLOW, -1)
 
     def init_game(self):
-        """Initialize a new game"""
+        """Initialize a new game with auto-swing intro"""
         self.state = GameState.PLAYING
         self.score = 0
         self.combo = 0
         start_x = 50  # Start further right to give more room
-        start_y = self.height - 15
+        start_y = self.height // 3  # Start higher up
 
-        self.spiderman = SpiderMan(x=start_x, y=start_y, vx=2.0)  # Start with forward momentum
+        self.spiderman = SpiderMan(x=start_x, y=start_y, vx=3.0, vy=-2.0)  # Start with momentum
         self.buildings = []
+        self.floating_anchors = []
         self.particles = []
         self.camera_x = 0
         self.frame_count = 0
 
-        # Create tutorial/starting platform - HUGE safe area
+        # Create tutorial/starting platform - HUGE safe area with TALL building
         tutorial_building = Building(
             x=0,
-            height=int(self.height * 0.4),  # Tall enough to never hit ground easily
+            height=int(self.height * 0.6),  # MUCH taller - 60% of screen!
             width=60,   # Extra wide starting platform
             has_obstacle=False,
             obstacle_height=0,
@@ -181,13 +192,43 @@ class SpidermanGame:
         )
         self.buildings.append(tutorial_building)
 
-        # Generate initial buildings with progressive spacing
-        x_pos = 50  # Start after the tutorial platform
-        for i in range(20):
+        # AUTO-SWING START: Attach to starting building window
+        self.spiderman.is_swinging = True
+        self.spiderman.swing_anchor_x = 30  # Middle of starting building
+        self.spiderman.swing_anchor_y = self.height - tutorial_building.height - 1
+        self.spiderman.rope_length = math.sqrt(
+            (self.spiderman.x - self.spiderman.swing_anchor_x)**2 +
+            (self.spiderman.y - self.spiderman.swing_anchor_y)**2
+        )
+
+        # Generate initial buildings with progressive spacing - 50 BUILDINGS!
+        x_pos = 70  # Start after the tutorial platform
+        for i in range(50):  # 50 buildings!
             self.buildings.append(self.generate_building(x_pos))
-            # Start with closer buildings, gradually space them out
             gap = self.get_building_gap(x_pos)
             x_pos += BUILDING_WIDTH + gap
+
+        # Generate floating anchor points for aerial swinging!
+        self.generate_floating_anchors()
+
+    def generate_floating_anchors(self):
+        """Generate floating anchor points scattered through the level"""
+        for i in range(30):  # 30 floating platforms
+            x = random.randint(100, 1500)
+            y = random.randint(int(self.height * 0.2), int(self.height * 0.5))
+            self.floating_anchors.append(FloatingAnchor(x=x, y=y))
+
+    def update_floating_anchors(self):
+        """Update floating anchors and generate new ones"""
+        # Remove anchors off-screen
+        self.floating_anchors = [a for a in self.floating_anchors if a.x > self.camera_x - 20]
+
+        # Add new floating anchors ahead
+        if self.spiderman:
+            while len(self.floating_anchors) < 30:
+                x = random.randint(int(self.spiderman.x + 100), int(self.spiderman.x + 300))
+                y = random.randint(int(self.height * 0.2), int(self.height * 0.5))
+                self.floating_anchors.append(FloatingAnchor(x=x, y=y))
 
     def get_difficulty_level(self, distance: float) -> float:
         """Calculate difficulty level based on distance traveled (0.0 to 1.0)"""
@@ -215,22 +256,22 @@ class SpidermanGame:
         """Generate a random building with difficulty scaling"""
         difficulty = self.get_difficulty_level(base_x)
 
-        # Building height progression
-        # Tutorial zone (0-20%): Very short buildings (8-12)
-        # Easy (20-40%): Short buildings (10-18)
-        # Medium (40-70%): Medium buildings (12-25)
-        # Hard (70-100%): Tall buildings (15-35)
+        # Building height progression - START WITH BIGGER BUILDINGS
+        # Tutorial zone (0-20%): Medium buildings (15-25)
+        # Easy (20-40%): Medium-Tall buildings (20-28)
+        # Medium (40-70%): Tall buildings (22-30)
+        # Hard (70-100%): Very tall buildings (25-35)
         if difficulty < 0.2:
-            min_height = 8
-            max_height = 12
-        elif difficulty < 0.4:
-            min_height = 10
-            max_height = 18
-        elif difficulty < 0.7:
-            min_height = 12
+            min_height = 15  # Much taller than before!
             max_height = 25
+        elif difficulty < 0.4:
+            min_height = 20
+            max_height = 28
+        elif difficulty < 0.7:
+            min_height = 22
+            max_height = 30
         else:
-            min_height = 15
+            min_height = 25
             max_height = 35
 
         height = random.randint(min_height, max_height)
@@ -370,23 +411,21 @@ class SpidermanGame:
         return True
 
     def shoot_web(self):
-        """Shoot web to the nearest building anchor point"""
+        """Shoot web to the nearest building anchor point OR floating anchor"""
         if not self.spiderman.is_swinging:
             nearest = None
             min_distance = float('inf')
 
             # Get current difficulty for adaptive web range
             difficulty = self.get_difficulty_level(self.spiderman.x)
-            # Make web shooting easier at the start
             web_range = MAX_ROPE_LENGTH + (1.0 - difficulty) * 15  # Extra range early on
 
+            # Check building anchor points
             for building in self.buildings:
-                # Multiple anchor points per building
                 for offset in [0.3, 0.5, 0.7]:
                     bldg_top_x = building.x + building.width * offset
                     bldg_top_y = self.height - building.height - 1
 
-                    # Only consider points ahead and above
                     if bldg_top_x > self.spiderman.x - 5:
                         dx = bldg_top_x - self.spiderman.x
                         dy = bldg_top_y - self.spiderman.y
@@ -395,6 +434,17 @@ class SpidermanGame:
                         if distance < web_range and distance < min_distance:
                             min_distance = distance
                             nearest = (bldg_top_x, bldg_top_y)
+
+            # Check floating anchor points!
+            for anchor in self.floating_anchors:
+                if anchor.x > self.spiderman.x - 5:
+                    dx = anchor.x - self.spiderman.x
+                    dy = anchor.y - self.spiderman.y
+                    distance = math.sqrt(dx * dx + dy * dy)
+
+                    if distance < web_range and distance < min_distance:
+                        min_distance = distance
+                        nearest = (anchor.x, anchor.y)
 
             if nearest:
                 self.spiderman.is_swinging = True
@@ -474,6 +524,9 @@ class SpidermanGame:
 
         # Update buildings
         self.update_buildings()
+
+        # Update floating anchors
+        self.update_floating_anchors()
 
     def check_collisions(self):
         """Check for collisions"""
@@ -727,6 +780,23 @@ class SpidermanGame:
                                                  curses.color_pair(6) | curses.A_BOLD | curses.A_BLINK)
                             except:
                                 pass
+
+        # Draw floating anchor points (flying platforms)
+        for anchor in self.floating_anchors:
+            anchor_x = int(anchor.x - self.camera_x)
+            anchor_y = int(anchor.y)
+
+            if 0 <= anchor_x < self.width - 1 and 0 <= anchor_y < self.height - 1:
+                # Draw cloud platform with border
+                platform_chars = ['☁', '☁', '☁']  # Multiple chars for width
+                for i, char in enumerate(platform_chars):
+                    try:
+                        draw_x = anchor_x - 1 + i
+                        if 0 <= draw_x < self.width - 1:
+                            self.stdscr.addstr(anchor_y, draw_x, char,
+                                             curses.color_pair(anchor.color) | curses.A_BOLD)
+                    except:
+                        pass
 
         # Draw web rope with style and swing arc indicator
         if self.spiderman.is_swinging:

@@ -17,9 +17,13 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 - **🎨 Crazy Graphics**: 15+ color combinations with 256-color terminal support
 - **💫 Particle Effects**: Web shooting particles, swing trails, and explosion effects
 - **⏱️ SLOW-MOTION SWINGING**: Time slows down when you're swinging for precise control!
+- **🎬 EPIC INTRO**: Game starts mid-swing from a building window - instant action!
+- **☁️ FLYING PLATFORMS**: Swing to floating cloud anchors in the sky!
+- **🏢 HUGE BUILDINGS**: Start with tall buildings (15-25 units) for better swinging
+- **🌆 50 BUILDINGS**: Massive city with 50 buildings to swing through
 - **🎯 Forgiving Physics**: Easy-to-learn swinging mechanics with visual arc indicators
 - **📈 Progressive Difficulty**: Starts easy, gets harder as you play - perfect learning curve!
-- **🎓 Tutorial Zone**: HUGE starting platform (60 units wide!) with no obstacles
+- **🎓 Tutorial Zone**: MASSIVE starting platform (60 units wide, 60% screen height!)
 - **🏗️ Dynamic City Generation**: Procedurally generated buildings with unique designs
 - **🔥 Combo System**: Chain swings together to build massive combos
 - **⚡ Animated Character**: Spiderman changes appearance while swinging
@@ -42,14 +46,16 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 
 ### Tips
 
-1. **⏱️ USE SLOW-MOTION**: When swinging, time SLOWS DOWN - use this to plan your release!
-2. **🎓 Start Safe**: Huge starting platform (60 units) - NO obstacles in first 100 units!
-3. **👀 Watch the Arc**: Dotted circle shows your swing path - use it to aim your release
-4. **🔥 Build Combos**: Chain swings together without touching ground to rack up combos
-5. **⚡ Manual Release**: Press SPACE while swinging to release early and control your trajectory
-6. **🎯 Auto-Aim**: Game finds the best anchor point automatically (easier at start!)
-7. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually
-8. **🏃 Momentum is Key**: Keep speed high by releasing at the right angle
+1. **🎬 EPIC START**: Game begins mid-swing from the starting building - you're already in action!
+2. **⏱️ USE SLOW-MOTION**: When swinging, time SLOWS DOWN - use this to plan your release!
+3. **☁️ USE FLYING PLATFORMS**: Swing to cloud anchors (☁☁☁) when no buildings are nearby!
+4. **🏢 BIGGER IS BETTER**: Tall buildings give you more swinging options
+5. **👀 Watch the Arc**: Dotted circle shows your swing path - use it to aim your release
+6. **🔥 Build Combos**: Chain swings together without touching ground to rack up combos
+7. **⚡ Manual Release**: Press SPACE while swinging to release early and control your trajectory
+8. **🎯 Auto-Aim**: Game finds the best anchor point (buildings OR clouds) automatically
+9. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually
+10. **🏃 Momentum is Key**: Keep speed high by releasing at the right angle
 
 ## 🚀 Installation
 
@@ -124,31 +130,36 @@ The game implements **forgiving** pendulum physics with a unique slow-motion mec
 The game features a smart difficulty curve that adapts as you play:
 
 **Tutorial Zone (0-100 units)**
-- MASSIVE starting platform (60 units wide, 40% of screen height!)
-- Very short buildings (8-12 units tall)
+- **AUTO-SWING START**: Game begins mid-swing from starting building window!
+- MASSIVE starting platform (60 units wide, 60% of screen height!)
+- Tall buildings right from the start (15-25 units tall) - proper swinging!
 - Buildings close together (8-12 gap)
 - **NO obstacles** - completely safe learning area
 - Extended web range (up to 45 units) for easier swinging
 - **SLOW-MOTION** activates when swinging for practice
+- **30 FLOATING PLATFORMS** scattered throughout for aerial swinging!
 
 **Easy (100-400 units, 0-20% difficulty)**
-- Short buildings (8-15 units)
+- Medium-tall buildings (15-25 units)
 - Close gaps (8-12 units)
 - Still no obstacles
 - Longer web range
+- Flying platforms available
 
 **Medium (400-1000 units, 20-60% difficulty)**
-- Medium buildings (10-25 units)
+- Tall buildings (20-30 units)
 - Wider gaps (10-20 units)
 - Obstacles start appearing (5-15% chance)
 - Normal web range
+- More flying platforms appear
 
 **Hard (1000+ units, 60-100% difficulty)**
-- Tall buildings (15-35 units)
+- Very tall buildings (25-35 units)
 - Wide gaps (15-25 units)
 - Many obstacles (15-30% chance)
 - Standard web range
 - Obstacles placed strategically
+- Flying platforms essential for gap crossing
 
 ### Obstacles
 
