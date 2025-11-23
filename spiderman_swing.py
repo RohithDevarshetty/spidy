@@ -21,7 +21,7 @@ MIN_BUILDING_HEIGHT = 8
 MAX_BUILDING_HEIGHT = 35
 BUILDING_WIDTH = 10
 GAME_SPEED = 0.03  # Base game speed (normal)
-SWING_SLOWMO_SPEED = 0.06  # Slower when swinging for better control
+SWING_SLOWMO_SPEED = 0.04  # Slower when swinging for better control (was 0.06, now faster)
 PARTICLE_LIFETIME = 15
 MAX_PARTICLES = 50
 
@@ -1164,7 +1164,7 @@ class SpidermanGame:
 
             # ===== TUTORIAL MESSAGES =====
             if self.spiderman.x < 250:
-                tutorial_y = 10  # Top of screen, below HUD boxes
+                tutorial_y = self.height - 7  # Bottom of screen, above controls
 
                 # Determine message
                 if self.spiderman.x < 80:
