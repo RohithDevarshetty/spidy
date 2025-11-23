@@ -14,12 +14,17 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 
 ## ✨ Features
 
-- **Realistic Swinging Physics**: Experience true pendulum-based swinging mechanics
-- **Dynamic City Generation**: Procedurally generated buildings create endless gameplay
-- **Colorful Terminal Graphics**: Beautiful ASCII art with vibrant colors
-- **Obstacle Challenges**: Dodge dangerous obstacles while swinging at high speeds
-- **High Score Tracking**: Compete with yourself to beat your best runs
-- **Smooth Gameplay**: Optimized for responsive, fluid terminal graphics
+- **🎨 Crazy Graphics**: 15+ color combinations with 256-color terminal support
+- **💫 Particle Effects**: Web shooting particles, swing trails, and explosion effects
+- **🎯 Realistic Swinging Physics**: True pendulum-based swinging mechanics
+- **🏗️ Dynamic City Generation**: Procedurally generated buildings with unique designs
+- **🔥 Combo System**: Chain swings together to build massive combos
+- **⚡ Animated Character**: Spiderman changes appearance while swinging
+- **🎪 Enhanced Buildings**: Multiple color variants, windows, and detailed architecture
+- **💥 Obstacle Challenges**: Blinking hazards that test your reflexes
+- **🏆 High Score Tracking**: Beat your personal records
+- **⏸️ Pause Feature**: Take a break anytime
+- **🎬 Smooth 60 FPS Gameplay**: Optimized for ultra-responsive controls
 
 ## 🎮 Gameplay
 
@@ -27,16 +32,18 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 
 ### Controls
 
-- `SPACE` - Shoot web to the nearest building and start swinging
-- `Q` - Quit game
+- `SPACE` - Shoot web and swing / Release web early for boost
+- `P` - Pause game
+- `Q` - Quit to menu / Exit game
 - `R` - Restart (when game over)
 
 ### Tips
 
-1. **Timing is Everything**: Press SPACE when you're near the peak of your swing to maintain momentum
-2. **Look Ahead**: Plan your next swing point while you're still swinging
-3. **Avoid Obstacles**: Watch out for the magenta `▼` obstacles on buildings
-4. **Keep Moving**: The longer you survive, the higher your score!
+1. **🔥 Build Combos**: Chain swings together without touching the ground to rack up combos
+2. **⚡ Early Release**: Release your web at the peak of your swing for a speed boost
+3. **🎯 Strategic Swinging**: The game finds the best anchor point automatically
+4. **💥 Avoid Obstacles**: Watch for blinking magenta `▼` hazards on buildings
+5. **🏃 Speed is Life**: Keep momentum high to travel further and score more points
 
 ## 🚀 Installation
 
@@ -89,11 +96,12 @@ The game implements realistic pendulum physics:
 - Momentum is conserved during swings
 - Release at the right moment to maximize distance
 
-### Scoring
+### Scoring & Combos
 
-- Score increases based on distance traveled
-- The further you go, the higher your score
-- Try to beat your high score with each run!
+- **Distance Score**: Points increase as you travel further through the city
+- **Combo System**: Each consecutive swing increases your combo multiplier
+- **Max Combo Tracking**: See your longest swing chain in the game over screen
+- **High Scores**: Your best run is saved and displayed on the menu
 
 ### Obstacles
 
@@ -102,14 +110,18 @@ The game implements realistic pendulum physics:
 - Colliding with an obstacle ends the game
 - Higher buildings = more obstacles
 
-## 🎨 Graphics
+## 🎨 Graphics & Visual Effects
 
-Despite being a terminal game, Spidy features:
-- Color-coded elements (red Spiderman, blue buildings, yellow webs)
-- Smooth animations
-- Dynamic camera following
-- HUD showing score and speed
-- Beautiful ASCII art menus
+Despite being a terminal game, Spidy features cutting-edge ASCII graphics:
+- **15 Vibrant Colors**: Full 256-color terminal support with fallback to 8 colors
+- **Particle System**: Real-time particle effects for webs, trails, and explosions
+- **Animated Spiderman**: Character cycles through 4 animation frames (🕷⚡💫✨)
+- **Building Variants**: 3 different color schemes with detailed windows and patterns
+- **Dynamic Camera**: Smooth following with parallax-style scrolling
+- **Blinking Effects**: Animated obstacles and UI elements
+- **HUD System**: Real-time stats including score, speed, combo counter, and status
+- **Beautiful Menus**: Unicode box-drawing characters and ASCII art
+- **Visual Feedback**: Particle explosions on collision, web shooting effects
 
 ## 🛠️ Development
 
