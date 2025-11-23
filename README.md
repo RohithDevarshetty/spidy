@@ -17,6 +17,7 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 - **🎨 Crazy Graphics**: 15+ color combinations with 256-color terminal support
 - **💫 Particle Effects**: Web shooting particles, swing trails, and explosion effects
 - **⏱️ SLOW-MOTION SWINGING**: Time slows down when you're swinging for precise control!
+- **⚡ BOOST SYSTEM**: Press [B] to spin around anchor and build momentum - 10 boosts per game!
 - **🎬 EPIC INTRO**: Game starts mid-swing from a building window - instant action!
 - **☁️ FLYING PLATFORMS**: Swing to floating cloud anchors in the sky!
 - **🏢 HUGE BUILDINGS**: Start with tall buildings (15-25 units) for better swinging
@@ -40,6 +41,7 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 ### Controls
 
 - `SPACE` - Shoot web and swing / Release web early for boost
+- `B` - **BOOST** while swinging to spin around anchor and build momentum!
 - `P` - Pause game
 - `Q` - Quit to menu / Exit game
 - `R` - Restart (when game over)
@@ -47,15 +49,17 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 ### Tips
 
 1. **🎬 EPIC START**: Game begins mid-swing from the starting building - you're already in action!
-2. **⏱️ USE SLOW-MOTION**: When swinging, time SLOWS DOWN - use this to plan your release!
-3. **☁️ USE FLYING PLATFORMS**: Swing to cloud anchors (☁☁☁) when no buildings are nearby!
-4. **🏢 BIGGER IS BETTER**: Tall buildings give you more swinging options
-5. **👀 Watch the Arc**: Dotted circle shows your swing path - use it to aim your release
-6. **🔥 Build Combos**: Chain swings together without touching ground to rack up combos
-7. **⚡ Manual Release**: Press SPACE while swinging to release early and control your trajectory
-8. **🎯 Auto-Aim**: Game finds the best anchor point (buildings OR clouds) automatically
-9. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually
-10. **🏃 Momentum is Key**: Keep speed high by releasing at the right angle
+2. **⚡ BOOST WHEN SLOW**: Press [B] when your swing slows down to spin faster around the anchor!
+3. **⏱️ USE SLOW-MOTION**: When swinging, time SLOWS DOWN - use this to plan your release!
+4. **💥 SAVE BOOSTS**: You only get 10 boosts per game - use them wisely!
+5. **☁️ USE FLYING PLATFORMS**: Swing to cloud anchors (☁☁☁) when no buildings are nearby!
+6. **🏢 BIGGER IS BETTER**: Tall buildings give you more swinging options
+7. **👀 Watch the Arc**: Dotted circle shows your swing path - use it to aim your release
+8. **🔥 Build Combos**: Chain swings together without touching ground to rack up combos
+9. **⚡ Manual Release**: Press SPACE while swinging to release early and control your trajectory
+10. **🎯 Auto-Aim**: Game finds the best anchor point (buildings OR clouds) automatically
+11. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually
+12. **🏃 Momentum is Key**: Keep speed high by releasing at the right angle
 
 ## 🚀 Installation
 
@@ -109,6 +113,15 @@ The game implements **forgiving** pendulum physics with a unique slow-motion mec
 - 🎯 Visual arc indicator shows your swing path
 - 💭 Gives you time to plan your next move
 - ⚡ Press SPACE to release and return to normal speed
+
+**Boost System:**
+- ⚡ **10 boosts per game** - use them strategically!
+- 🌀 Press [B] while swinging to spin around anchor
+- 💨 Adds 8.0 units of angular velocity in tangential direction
+- ✨ Creates particle burst effect (⚡✨💨⭐)
+- 🔄 10-frame cooldown between boosts (prevents spam)
+- 📊 Counter shows remaining boosts (blinks when ≤3)
+- 💡 Perfect for when your swing slows down!
 
 **Physics:**
 - Reduced gravity (0.25) for easier control

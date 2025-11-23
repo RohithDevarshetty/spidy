@@ -75,6 +75,7 @@ class SpiderMan:
     swing_anchor_x: float = 0
     swing_anchor_y: float = 0
     animation_frame: int = 0
+    boosts_remaining: int = 10  # 10 boosts per game!
 
 
 class SpidermanGame:
@@ -91,6 +92,8 @@ class SpidermanGame:
         self.high_score = 0
         self.combo = 0
         self.max_combo = 0
+        self.boost_particles = []  # Track boost effect particles
+        self.boost_cooldown = 0  # Prevent spam
 
         # Initialize curses
         curses.curs_set(0)  # Hide cursor
@@ -171,10 +174,11 @@ class SpidermanGame:
         self.state = GameState.PLAYING
         self.score = 0
         self.combo = 0
+        self.boost_cooldown = 0
         start_x = 50  # Start further right to give more room
         start_y = self.height // 3  # Start higher up
 
-        self.spiderman = SpiderMan(x=start_x, y=start_y, vx=3.0, vy=-2.0)  # Start with momentum
+        self.spiderman = SpiderMan(x=start_x, y=start_y, vx=3.0, vy=-2.0, boosts_remaining=10)  # Start with 10 boosts!
         self.buildings = []
         self.floating_anchors = []
         self.particles = []
@@ -350,6 +354,46 @@ class SpidermanGame:
                 7  # Orange
             )
 
+    def create_boost_effect(self):
+        """Create visual effect when boost is activated"""
+        spidy = self.spiderman
+        # Create circular burst of particles
+        for i in range(16):
+            angle = (i / 16) * 2 * math.pi
+            speed = random.uniform(3, 5)
+            self.add_particle(
+                spidy.x, spidy.y,
+                speed * math.cos(angle), speed * math.sin(angle),
+                random.choice(['⚡', '✨', '💨', '⭐']),
+                13  # Purple/Magenta for boost
+            )
+
+    def activate_boost(self):
+        """Activate boost to spin around anchor point"""
+        if self.spiderman.boosts_remaining > 0 and self.boost_cooldown == 0 and self.spiderman.is_swinging:
+            spidy = self.spiderman
+
+            # Calculate current angle
+            dx = spidy.x - spidy.swing_anchor_x
+            dy = spidy.y - spidy.swing_anchor_y
+            angle = math.atan2(dy, dx)
+
+            # Add angular velocity boost (tangential direction)
+            boost_strength = 8.0  # Strong boost!
+            tangent_x = -math.sin(angle)
+            tangent_y = math.cos(angle)
+
+            # Apply boost in tangential direction
+            spidy.vx += tangent_x * boost_strength
+            spidy.vy += tangent_y * boost_strength
+
+            # Consume boost
+            spidy.boosts_remaining -= 1
+            self.boost_cooldown = 10  # Frames before next boost
+
+            # Visual feedback
+            self.create_boost_effect()
+
     def update_particles(self):
         """Update all particle positions and lifetimes"""
         for particle in self.particles:
@@ -391,6 +435,9 @@ class SpidermanGame:
                 else:
                     # Release web early
                     self.spiderman.is_swinging = False
+            elif key in [ord('b'), ord('B')] and self.spiderman.is_swinging:
+                # BOOST! Spin around anchor
+                self.activate_boost()
             elif key == ord('q'):
                 self.state = GameState.MENU
             elif key == ord('p'):
@@ -463,6 +510,10 @@ class SpidermanGame:
         spidy = self.spiderman
         self.frame_count += 1
         spidy.animation_frame = (spidy.animation_frame + 1) % 20
+
+        # Update boost cooldown
+        if self.boost_cooldown > 0:
+            self.boost_cooldown -= 1
 
         if spidy.is_swinging:
             # Swinging physics with pendulum motion - MUCH MORE FORGIVING
@@ -897,15 +948,31 @@ class SpidermanGame:
                 row = 3 if difficulty_pct > 0 else 2
                 self.stdscr.addstr(row, 2, combo_text, color)
 
+            # Boost counter - ALWAYS VISIBLE when you have boosts
+            if self.spiderman.boosts_remaining > 0:
+                boost_text = f"⚡ BOOSTS: {self.spiderman.boosts_remaining}/10"
+                boost_color = curses.color_pair(13) | curses.A_BOLD
+                if self.spiderman.boosts_remaining <= 3:
+                    boost_color |= curses.A_BLINK  # Blink when low
+                row_offset = 3 if difficulty_pct > 0 else 2
+                if self.combo > 1:
+                    row_offset += 1
+                try:
+                    self.stdscr.addstr(row_offset, 2, boost_text, boost_color)
+                except:
+                    pass
+
             # Tutorial message at the start
-            if self.spiderman.x < 200:  # Show for first part of game
+            if self.spiderman.x < 250:  # Show for first part of game
                 tutorial_y = self.height // 2 - 2
                 if self.spiderman.x < 80:
-                    tutorial_msg = "🕷️  Press [SPACE] to shoot web and start swinging!"
+                    tutorial_msg = "🕷️  Already swinging! Press [B] for BOOST to spin faster!"
                 elif self.spiderman.x < 150:
-                    tutorial_msg = "⏱️  Time SLOWS when swinging! Plan your move, then release!"
+                    tutorial_msg = "⏱️  Time SLOWS when swinging! Press [B] to BOOST!"
                 elif self.spiderman.x < 200:
-                    tutorial_msg = "💡 Chain swings to build combos! Game gets harder as you go!"
+                    tutorial_msg = "💡 Chain swings to build combos! Game gets harder!"
+                elif self.spiderman.x < 250:
+                    tutorial_msg = "⚡ Use [B] BOOST when swing slows - you have 10 per game!"
                 else:
                     tutorial_msg = ""
 
@@ -929,7 +996,7 @@ class SpidermanGame:
             self.stdscr.addstr(0, self.width - 25, f"Status: {status}", status_color | curses.A_BOLD)
 
             # Controls reminder
-            controls = "[SPACE] Web  [P] Pause  [Q] Quit"
+            controls = "[SPACE] Web  [B] Boost  [P] Pause  [Q] Quit"
             self.stdscr.addstr(self.height - 1, 2, controls, curses.color_pair(9))
 
         except:
