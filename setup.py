@@ -11,12 +11,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="spidy",
     version="1.0.0",
-    author="Spiderman Game Developers",
-    description="A thrilling terminal-based Spiderman swinging game",
+    author="Marvel Games Developers",
+    description="Thrilling terminal-based Marvel superhero games: Spiderman and Captain America",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/RohithDevarshetty/spidy",
-    py_modules=["spiderman_swing"],
+    py_modules=["spiderman_swing", "captain_america"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
@@ -36,6 +36,7 @@ setup(
     entry_points={
         "console_scripts": [
             "spidy=spiderman_swing:main_wrapper",
+            "cap=captain_america:main_wrapper",
         ],
     },
     install_requires=[],
