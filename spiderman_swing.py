@@ -811,43 +811,41 @@ class SpidermanGame:
                     except:
                         pass
 
-        # Draw buildings with ENHANCED graphics
+        # Draw buildings with BLACK AND WHITE graphics
         for building in self.buildings:
             screen_x = int(building.x - self.camera_x)
 
             if -building.width <= screen_x <= self.width:
                 bldg_top = self.height - building.height
 
-                # Select color based on variant
-                if building.color_variant == 0:
-                    fill_color = curses.color_pair(3)
-                    edge_color = curses.color_pair(2)
-                    window_color = curses.color_pair(15)
-                elif building.color_variant == 1:
-                    fill_color = curses.color_pair(14)
-                    edge_color = curses.color_pair(2)
-                    window_color = curses.color_pair(12)
+                # Check if this building has the web attached to it (GLOW EFFECT!)
+                is_web_attached = False
+                if self.spiderman.is_swinging:
+                    anchor_x = self.spiderman.swing_anchor_x
+                    if building.x <= anchor_x <= building.x + building.width:
+                        is_web_attached = True
+
+                # Black and white color scheme - GLOW when web attached
+                if is_web_attached:
+                    fill_color = curses.color_pair(4)  # Yellow glow
+                    edge_color = curses.color_pair(4)  # Yellow glow
+                    window_color = curses.color_pair(4)  # Yellow glow
                 else:
-                    fill_color = curses.color_pair(9)
-                    edge_color = curses.color_pair(8)
-                    window_color = curses.color_pair(10)
+                    fill_color = curses.color_pair(9)  # White/gray
+                    edge_color = curses.color_pair(9)  # White/gray
+                    window_color = curses.color_pair(9)  # White/gray
 
                 # Draw antenna on roof (if has_antenna)
                 if building.has_antenna and bldg_top > 2:
                     antenna_x = screen_x + building.width // 2
                     if 0 <= antenna_x < self.width - 1:
-                        # Antenna tower
+                        # Antenna tower - simpler
                         for antenna_y in range(max(0, bldg_top - 3), bldg_top):
                             try:
                                 if antenna_y == bldg_top - 3:
-                                    self.stdscr.addstr(antenna_y, antenna_x, '⚡',
-                                                     curses.color_pair(7) | curses.A_BOLD)
-                                elif antenna_y == bldg_top - 2:
-                                    self.stdscr.addstr(antenna_y, antenna_x, '│',
-                                                     curses.color_pair(9) | curses.A_BOLD)
+                                    self.stdscr.addstr(antenna_y, antenna_x, '^', edge_color | curses.A_BOLD)
                                 else:
-                                    self.stdscr.addstr(antenna_y, antenna_x, '┃',
-                                                     curses.color_pair(9) | curses.A_BOLD)
+                                    self.stdscr.addstr(antenna_y, antenna_x, '|', edge_color)
                             except:
                                 pass
 
@@ -857,91 +855,60 @@ class SpidermanGame:
                         draw_x = screen_x + x
                         if 0 <= draw_x < self.width - 1 and 0 <= bldg_top < self.height - 1:
                             try:
-                                # Rooftop features
-                                if building.building_style == 0:  # Modern - flat roof
+                                # Rooftop features - simpler
+                                if building.building_style == 0:
                                     char = '▀' if x % 2 == 0 else '▄'
-                                elif building.building_style == 1:  # Classic - decorative
-                                    char = '╬' if x % 3 == 0 else '═'
-                                else:  # Art Deco - stepped
-                                    char = '▓' if x % 2 == 0 else '▒'
-                                self.stdscr.addstr(bldg_top, draw_x, char,
-                                                 edge_color | curses.A_BOLD)
+                                elif building.building_style == 1:
+                                    char = '=' if x % 3 == 0 else '-'
+                                else:
+                                    char = '_'
+                                attr = edge_color | curses.A_BOLD if is_web_attached else edge_color
+                                self.stdscr.addstr(bldg_top, draw_x, char, attr)
                             except:
                                 pass
 
-                # Draw building body with detailed patterns
+                # Draw building body - SIMPLE BLACK AND WHITE
                 for y in range(bldg_top + 1, self.height - 1):
                     for x in range(building.width):
                         draw_x = screen_x + x
                         if 0 <= draw_x < self.width - 1 and 0 <= y < self.height - 1:
-                            # Building architectural patterns
+                            # Simple building patterns
                             is_left_edge = (x == 0)
                             is_right_edge = (x == building.width - 1)
                             floor_num = (self.height - 1 - y)
 
-                            # Window patterns based on building style
-                            if building.building_style == 0:  # Modern - regular grid
-                                is_window = (x % 3 == 1 and floor_num % 4 == 2)
-                                is_window_frame = (x % 3 == 1 and floor_num % 4 in [1, 3])
-                            elif building.building_style == 1:  # Classic - paired windows
-                                is_window = (x % 4 in [1, 2] and floor_num % 5 in [2, 3])
-                                is_window_frame = (x % 4 in [0, 3] and floor_num % 5 in [1, 4])
-                            else:  # Art Deco - stylized
-                                is_window = (x % 2 == 0 and floor_num % 3 == 1)
-                                is_window_frame = (floor_num % 6 == 0)
+                            # Simple window pattern
+                            is_window = (x % 3 == 1 and floor_num % 4 == 2)
 
                             # Draw based on position
                             if is_left_edge or is_right_edge:
-                                # Edges - strong outline
-                                char = '█'
-                                color = edge_color | curses.A_BOLD
+                                # Edges
+                                char = '|'
+                                attr = edge_color | curses.A_BOLD if is_web_attached else edge_color
                             elif is_window:
-                                # Windows - varied brightness for realism
-                                rand_val = random.random()
-                                if rand_val < 0.4:
-                                    char = '█'  # Lit window
-                                    color = window_color | curses.A_BOLD
-                                elif rand_val < 0.7:
-                                    char = '▓'  # Dim window
-                                    color = window_color
-                                else:
-                                    char = '▒'  # Dark window
-                                    color = fill_color
-                            elif is_window_frame:
-                                # Window frames and details
-                                if building.building_style == 0:
-                                    char = '─'
-                                elif building.building_style == 1:
-                                    char = '═'
-                                else:
-                                    char = '▬'
-                                color = edge_color
+                                # Windows - simple
+                                char = '#'
+                                attr = window_color | curses.A_BOLD if is_web_attached else window_color
                             else:
                                 # Building fill
-                                char = '░'
-                                color = fill_color
-
+                                char = '.'
+                                attr = fill_color
                             try:
-                                self.stdscr.addstr(y, draw_x, char, color)
+                                self.stdscr.addstr(y, draw_x, char, attr)
                             except:
                                 pass
 
-                # Draw obstacle with ENHANCED style
+                # Draw obstacle - simple dangerous spikes
                 if building.has_obstacle:
                     obstacle_y = self.height - building.obstacle_height
                     for x in range(1, building.width - 1):
                         draw_x = screen_x + x
                         if 0 <= draw_x < self.width - 1 and 0 <= obstacle_y < self.height - 1:
-                            # Animated dangerous obstacle
-                            if x % 3 == 0:
-                                char = '▼'
-                            elif x % 3 == 1:
-                                char = '◆'
-                            else:
-                                char = '▽'
+                            # Simple spikes - no blinking
+                            char = 'v' if x % 2 == 0 else '^'
                             try:
                                 self.stdscr.addstr(obstacle_y, draw_x, char,
-                                                 curses.color_pair(6) | curses.A_BOLD | curses.A_BLINK)
+                                                 curses.color_pair(6) | curses.A_BOLD)
                             except:
                                 pass
 
@@ -1082,17 +1049,18 @@ class SpidermanGame:
                             except:
                                 pass
 
-        # Draw Spiderman with animation
+        # Draw Spiderman - BETTER CHARACTER
         spidy_screen_x = int(self.spiderman.x - self.camera_x)
         spidy_screen_y = int(self.spiderman.y)
 
         if 0 <= spidy_screen_x < self.width - 1 and 0 <= spidy_screen_y < self.height - 1:
-            # Animated character
+            # Better Spiderman character
             if self.spiderman.is_swinging:
-                chars = ['🕷', '⚡', '💫', '✨']
-                spidy_char = chars[self.spiderman.animation_frame % len(chars)]
+                # Swinging pose - use @ for body
+                spidy_char = '@'
             else:
-                spidy_char = '●'
+                # Falling pose
+                spidy_char = 'O'
 
             try:
                 self.stdscr.addstr(spidy_screen_y, spidy_screen_x, spidy_char,
@@ -1114,15 +1082,15 @@ class SpidermanGame:
             # ===== TOP LEFT HUD BOX =====
             hud_lines = []
             hud_lines.append(f"╔═══════════════════════╗")
-            hud_lines.append(f"║ 🏆 Score: {self.score:<10} ║")
-            hud_lines.append(f"║ ⚡ Speed: {speed:<10.1f} ║")
+            hud_lines.append(f"║ Score: {self.score:<13} ║")
+            hud_lines.append(f"║ Speed: {speed:<13.1f} ║")
 
             if difficulty_pct > 0:
-                hud_lines.append(f"║ 📊 Diff: {difficulty_pct:>3}%        ║")
+                hud_lines.append(f"║ Diff: {difficulty_pct:>3}%           ║")
 
             if self.spiderman.boosts_remaining > 0:
                 boosts_display = f"{self.spiderman.boosts_remaining}/10"
-                hud_lines.append(f"║ ⚡ Boosts: {boosts_display:<9} ║")
+                hud_lines.append(f"║ Boosts: {boosts_display:<12} ║")
 
             hud_lines.append(f"╚═══════════════════════╝")
 
@@ -1154,12 +1122,10 @@ class SpidermanGame:
             if self.combo > 1:
                 combo_y = len(hud_lines) + 1
                 combo_text = f"╔═══════════════════════╗"
-                combo_val = f"║  🔥 COMBO x{self.combo}!     ║"
+                combo_val = f"║  COMBO x{self.combo}!        ║"
                 combo_bot = f"╚═══════════════════════╝"
 
                 combo_color = curses.color_pair(7) | curses.A_BOLD
-                if self.combo > 5:
-                    combo_color |= curses.A_BLINK
 
                 try:
                     self.stdscr.addstr(combo_y, 1, combo_text, curses.color_pair(7))
@@ -1173,12 +1139,12 @@ class SpidermanGame:
             status_lines.append(f"╔══════════════╗")
 
             if self.spiderman.is_swinging:
-                status_lines.append(f"║ ⏱️  SLOW-MO   ║")
-                status_lines.append(f"║ 🕷️  SWINGING! ║")
+                status_lines.append(f"║  SLOW-MO     ║")
+                status_lines.append(f"║  SWINGING!   ║")
                 status_color = curses.color_pair(4)
             else:
                 status_lines.append(f"║              ║")
-                status_lines.append(f"║ ⚠️  FREE FALL ║")
+                status_lines.append(f"║  FREE FALL   ║")
                 status_color = curses.color_pair(6)
 
             status_lines.append(f"╚══════════════╝")
@@ -1191,8 +1157,6 @@ class SpidermanGame:
                         color = curses.color_pair(4)
                     else:
                         color = status_color | curses.A_BOLD
-                        if self.spiderman.is_swinging and i == 1:
-                            color |= curses.A_BLINK
 
                     self.stdscr.addstr(i, status_x, line, color)
                 except:
@@ -1204,13 +1168,13 @@ class SpidermanGame:
 
                 # Determine message
                 if self.spiderman.x < 80:
-                    tutorial_msg = "🕷️  Already swinging! Press [B] for BOOST to spin faster!"
+                    tutorial_msg = "Already swinging! Press [B] for BOOST to spin faster!"
                 elif self.spiderman.x < 150:
-                    tutorial_msg = "⏱️  Time SLOWS when swinging! Press [B] to BOOST!"
+                    tutorial_msg = "Time SLOWS when swinging! Press [B] to BOOST!"
                 elif self.spiderman.x < 200:
-                    tutorial_msg = "💡 Chain swings to build combos! Game gets harder!"
+                    tutorial_msg = "Chain swings to build combos! Game gets harder!"
                 elif self.spiderman.x < 250:
-                    tutorial_msg = "⚡ Use [B] BOOST when swing slows - you have 10 per game!"
+                    tutorial_msg = "Use [B] BOOST when swing slows - you have 10 per game!"
                 else:
                     tutorial_msg = ""
 
