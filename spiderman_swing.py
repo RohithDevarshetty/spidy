@@ -14,9 +14,9 @@ from typing import List, Tuple
 from enum import Enum
 
 # Game Constants
-GRAVITY = 0.4
+GRAVITY = 0.35  # Slightly reduced for easier control
 SWING_STRENGTH = 1.8
-MAX_ROPE_LENGTH = 25
+MAX_ROPE_LENGTH = 30  # Increased for easier web shooting at start
 MIN_BUILDING_HEIGHT = 8
 MAX_BUILDING_HEIGHT = 35
 BUILDING_WIDTH = 10
@@ -160,24 +160,103 @@ class SpidermanGame:
         self.state = GameState.PLAYING
         self.score = 0
         self.combo = 0
-        start_x = 20
+        start_x = 50  # Start further right to give more room
         start_y = self.height - 15
 
-        self.spiderman = SpiderMan(x=start_x, y=start_y)
+        self.spiderman = SpiderMan(x=start_x, y=start_y, vx=2.0)  # Start with forward momentum
         self.buildings = []
         self.particles = []
         self.camera_x = 0
         self.frame_count = 0
 
-        # Generate initial buildings
-        for i in range(15):
-            self.buildings.append(self.generate_building(i * 15))
+        # Create tutorial/starting platform - nice wide safe area
+        tutorial_building = Building(
+            x=0,
+            height=12,  # Medium height, safe
+            width=40,   # Extra wide starting platform
+            has_obstacle=False,
+            obstacle_height=0,
+            color_variant=1
+        )
+        self.buildings.append(tutorial_building)
+
+        # Generate initial buildings with progressive spacing
+        x_pos = 50  # Start after the tutorial platform
+        for i in range(20):
+            self.buildings.append(self.generate_building(x_pos))
+            # Start with closer buildings, gradually space them out
+            gap = self.get_building_gap(x_pos)
+            x_pos += BUILDING_WIDTH + gap
+
+    def get_difficulty_level(self, distance: float) -> float:
+        """Calculate difficulty level based on distance traveled (0.0 to 1.0)"""
+        # Gradually increase difficulty over distance
+        # Difficulty increases from 0 to 1 over ~1500 units (longer progression)
+        # First 100 units are super easy (tutorial zone)
+        if distance < 100:
+            return 0.0  # Tutorial zone - no difficulty
+        return min(1.0, (distance - 100) / 1500.0)
+
+    def get_building_gap(self, distance: float) -> int:
+        """Calculate gap between buildings based on distance"""
+        difficulty = self.get_difficulty_level(distance)
+        # Start with very close buildings (8-12), gradually increase to (12-25)
+        if difficulty < 0.2:
+            # Early game - keep it tight and easy
+            return random.randint(8, 12)
+        else:
+            # Progressive difficulty
+            min_gap = 10
+            max_gap = int(10 + difficulty * 15)  # 10-25
+            return random.randint(min_gap, max_gap)
 
     def generate_building(self, base_x: int) -> Building:
-        """Generate a random building"""
-        height = random.randint(MIN_BUILDING_HEIGHT, MAX_BUILDING_HEIGHT)
-        has_obstacle = random.random() < 0.25  # 25% chance
-        obstacle_height = random.randint(int(height * 0.3), int(height * 0.7)) if has_obstacle and height > 12 else 0
+        """Generate a random building with difficulty scaling"""
+        difficulty = self.get_difficulty_level(base_x)
+
+        # Building height progression
+        # Tutorial zone (0-20%): Very short buildings (8-12)
+        # Easy (20-40%): Short buildings (10-18)
+        # Medium (40-70%): Medium buildings (12-25)
+        # Hard (70-100%): Tall buildings (15-35)
+        if difficulty < 0.2:
+            min_height = 8
+            max_height = 12
+        elif difficulty < 0.4:
+            min_height = 10
+            max_height = 18
+        elif difficulty < 0.7:
+            min_height = 12
+            max_height = 25
+        else:
+            min_height = 15
+            max_height = 35
+
+        height = random.randint(min_height, max_height)
+
+        # Obstacle probability progression
+        # Tutorial: 0%, Easy: 5%, Medium: 15%, Hard: 30%
+        if difficulty < 0.3:
+            obstacle_chance = 0.0  # No obstacles in early game
+        elif difficulty < 0.5:
+            obstacle_chance = 0.05  # Rare obstacles
+        elif difficulty < 0.7:
+            obstacle_chance = 0.15  # Some obstacles
+        else:
+            obstacle_chance = 0.30  # More obstacles at high difficulty
+
+        has_obstacle = random.random() < obstacle_chance and height > 12
+
+        # Obstacle placement
+        if has_obstacle:
+            # Place obstacles more strategically at higher difficulties
+            obstacle_height = random.randint(
+                int(height * (0.3 + difficulty * 0.2)),  # Lower bound moves up
+                int(height * (0.7 + difficulty * 0.1))   # Upper bound moves up
+            )
+        else:
+            obstacle_height = 0
+
         color_variant = random.randint(0, 2)
 
         return Building(
@@ -246,11 +325,11 @@ class SpidermanGame:
         # Remove buildings off-screen
         self.buildings = [b for b in self.buildings if b.x + b.width > self.camera_x - 20]
 
-        # Add new buildings
+        # Add new buildings with progressive difficulty
         if self.buildings:
             last_building = max(self.buildings, key=lambda b: b.x)
             while last_building.x < self.camera_x + self.width + 50:
-                gap = random.randint(12, 25)
+                gap = self.get_building_gap(last_building.x)
                 new_x = last_building.x + last_building.width + gap
                 self.buildings.append(self.generate_building(new_x))
                 last_building = self.buildings[-1]
@@ -295,6 +374,11 @@ class SpidermanGame:
             nearest = None
             min_distance = float('inf')
 
+            # Get current difficulty for adaptive web range
+            difficulty = self.get_difficulty_level(self.spiderman.x)
+            # Make web shooting easier at the start
+            web_range = MAX_ROPE_LENGTH + (1.0 - difficulty) * 15  # Extra range early on
+
             for building in self.buildings:
                 # Multiple anchor points per building
                 for offset in [0.3, 0.5, 0.7]:
@@ -307,7 +391,7 @@ class SpidermanGame:
                         dy = bldg_top_y - self.spiderman.y
                         distance = math.sqrt(dx * dx + dy * dy)
 
-                        if distance < MAX_ROPE_LENGTH and distance < min_distance:
+                        if distance < web_range and distance < min_distance:
                             min_distance = distance
                             nearest = (bldg_top_x, bldg_top_y)
 
@@ -712,13 +796,37 @@ class SpidermanGame:
             self.stdscr.addstr(0, 2, score_text, curses.color_pair(12) | curses.A_BOLD)
             self.stdscr.addstr(1, 2, speed_text, curses.color_pair(5))
 
+            # Difficulty indicator
+            difficulty = self.get_difficulty_level(self.spiderman.x)
+            difficulty_pct = int(difficulty * 100)
+            if difficulty_pct > 0:
+                diff_text = f"📊 Difficulty: {difficulty_pct}%"
+                diff_color = curses.color_pair(5) if difficulty < 0.5 else curses.color_pair(7) if difficulty < 0.8 else curses.color_pair(6)
+                self.stdscr.addstr(2, 2, diff_text, diff_color)
+
             # Combo counter
             if self.combo > 1:
                 combo_text = f"🔥 COMBO x{self.combo}!"
                 color = curses.color_pair(7) | curses.A_BOLD
                 if self.combo > 5:
                     color |= curses.A_BLINK
-                self.stdscr.addstr(2, 2, combo_text, color)
+                row = 3 if difficulty_pct > 0 else 2
+                self.stdscr.addstr(row, 2, combo_text, color)
+
+            # Tutorial message at the start
+            if self.spiderman.x < 150:  # Show for first part of game
+                tutorial_y = self.height // 2 - 2
+                if self.spiderman.x < 80:
+                    tutorial_msg = "🕷️  Press [SPACE] to shoot web and start swinging!"
+                elif self.spiderman.x < 150:
+                    tutorial_msg = "💡 Chain swings to build combos! Game gets harder as you go!"
+                else:
+                    tutorial_msg = ""
+
+                if tutorial_msg and tutorial_y > 5:
+                    x = max(0, (self.width - len(tutorial_msg)) // 2)
+                    self.stdscr.addstr(tutorial_y, x, tutorial_msg,
+                                     curses.color_pair(5) | curses.A_BOLD)
 
             # Status
             status = "SWINGING!" if self.spiderman.is_swinging else "Free Fall"

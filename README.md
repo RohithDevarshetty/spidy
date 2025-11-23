@@ -17,11 +17,13 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 - **🎨 Crazy Graphics**: 15+ color combinations with 256-color terminal support
 - **💫 Particle Effects**: Web shooting particles, swing trails, and explosion effects
 - **🎯 Realistic Swinging Physics**: True pendulum-based swinging mechanics
+- **📈 Progressive Difficulty**: Starts easy, gets harder as you play - perfect learning curve!
+- **🎓 Tutorial Zone**: Wide starting platform with no obstacles to learn the mechanics
 - **🏗️ Dynamic City Generation**: Procedurally generated buildings with unique designs
 - **🔥 Combo System**: Chain swings together to build massive combos
 - **⚡ Animated Character**: Spiderman changes appearance while swinging
 - **🎪 Enhanced Buildings**: Multiple color variants, windows, and detailed architecture
-- **💥 Obstacle Challenges**: Blinking hazards that test your reflexes
+- **💥 Obstacle Challenges**: Blinking hazards that gradually appear as difficulty increases
 - **🏆 High Score Tracking**: Beat your personal records
 - **⏸️ Pause Feature**: Take a break anytime
 - **🎬 Smooth 60 FPS Gameplay**: Optimized for ultra-responsive controls
@@ -39,11 +41,13 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 
 ### Tips
 
-1. **🔥 Build Combos**: Chain swings together without touching the ground to rack up combos
-2. **⚡ Early Release**: Release your web at the peak of your swing for a speed boost
-3. **🎯 Strategic Swinging**: The game finds the best anchor point automatically
-4. **💥 Avoid Obstacles**: Watch for blinking magenta `▼` hazards on buildings
-5. **🏃 Speed is Life**: Keep momentum high to travel further and score more points
+1. **🎓 Learn in the Tutorial Zone**: First 100 units have NO obstacles - perfect for learning!
+2. **🔥 Build Combos**: Chain swings together without touching the ground to rack up combos
+3. **⚡ Early Release**: Release your web at the peak of your swing for a speed boost
+4. **🎯 Strategic Swinging**: The game finds the best anchor point automatically (easier at start!)
+5. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually as you progress
+6. **💥 Obstacles Appear Slowly**: No obstacles in early game, they appear as you get better
+7. **🏃 Speed is Life**: Keep momentum high to travel further and score more points
 
 ## 🚀 Installation
 
@@ -103,12 +107,42 @@ The game implements realistic pendulum physics:
 - **Max Combo Tracking**: See your longest swing chain in the game over screen
 - **High Scores**: Your best run is saved and displayed on the menu
 
+### Progressive Difficulty System
+
+The game features a smart difficulty curve that adapts as you play:
+
+**Tutorial Zone (0-100 units)**
+- Extra-wide starting platform (40 units wide)
+- Very short buildings (8-12 units tall)
+- Buildings close together (8-12 gap)
+- **NO obstacles** - safe learning area
+- Extended web range for easier swinging
+
+**Easy (100-400 units, 0-20% difficulty)**
+- Short buildings (8-15 units)
+- Close gaps (8-12 units)
+- Still no obstacles
+- Longer web range
+
+**Medium (400-1000 units, 20-60% difficulty)**
+- Medium buildings (10-25 units)
+- Wider gaps (10-20 units)
+- Obstacles start appearing (5-15% chance)
+- Normal web range
+
+**Hard (1000+ units, 60-100% difficulty)**
+- Tall buildings (15-35 units)
+- Wide gaps (15-25 units)
+- Many obstacles (15-30% chance)
+- Standard web range
+- Obstacles placed strategically
+
 ### Obstacles
 
-- Random obstacles appear on buildings
-- Marked with `▼` symbols in magenta
+- Appear gradually as difficulty increases
+- Marked with blinking `▼` symbols in magenta
 - Colliding with an obstacle ends the game
-- Higher buildings = more obstacles
+- Become more common at higher difficulties
 
 ## 🎨 Graphics & Visual Effects
 
