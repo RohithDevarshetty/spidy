@@ -1164,7 +1164,7 @@ class SpidermanGame:
 
             # ===== TUTORIAL MESSAGES =====
             if self.spiderman.x < 250:
-                tutorial_y = self.height // 2 - 3
+                tutorial_y = 10  # Top of screen, below HUD boxes
 
                 # Determine message
                 if self.spiderman.x < 80:
@@ -1179,7 +1179,7 @@ class SpidermanGame:
                     tutorial_msg = ""
 
                 # Draw tutorial box
-                if tutorial_msg and tutorial_y > 5:
+                if tutorial_msg:
                     box_width = len(tutorial_msg) + 4
                     x = max(0, (self.width - box_width) // 2)
 
