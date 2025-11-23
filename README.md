@@ -16,9 +16,10 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 
 - **🎨 Crazy Graphics**: 15+ color combinations with 256-color terminal support
 - **💫 Particle Effects**: Web shooting particles, swing trails, and explosion effects
-- **🎯 Realistic Swinging Physics**: True pendulum-based swinging mechanics
+- **⏱️ SLOW-MOTION SWINGING**: Time slows down when you're swinging for precise control!
+- **🎯 Forgiving Physics**: Easy-to-learn swinging mechanics with visual arc indicators
 - **📈 Progressive Difficulty**: Starts easy, gets harder as you play - perfect learning curve!
-- **🎓 Tutorial Zone**: Wide starting platform with no obstacles to learn the mechanics
+- **🎓 Tutorial Zone**: HUGE starting platform (60 units wide!) with no obstacles
 - **🏗️ Dynamic City Generation**: Procedurally generated buildings with unique designs
 - **🔥 Combo System**: Chain swings together to build massive combos
 - **⚡ Animated Character**: Spiderman changes appearance while swinging
@@ -26,7 +27,7 @@ A thrilling terminal-based Spiderman swinging game with amazing ASCII graphics! 
 - **💥 Obstacle Challenges**: Blinking hazards that gradually appear as difficulty increases
 - **🏆 High Score Tracking**: Beat your personal records
 - **⏸️ Pause Feature**: Take a break anytime
-- **🎬 Smooth 60 FPS Gameplay**: Optimized for ultra-responsive controls
+- **🎬 Smooth Gameplay**: Adaptive speed for maximum control
 
 ## 🎮 Gameplay
 
@@ -41,13 +42,14 @@ You are Spiderman, swinging through a bustling city. Your goal is to travel as f
 
 ### Tips
 
-1. **🎓 Learn in the Tutorial Zone**: First 100 units have NO obstacles - perfect for learning!
-2. **🔥 Build Combos**: Chain swings together without touching the ground to rack up combos
-3. **⚡ Early Release**: Release your web at the peak of your swing for a speed boost
-4. **🎯 Strategic Swinging**: The game finds the best anchor point automatically (easier at start!)
-5. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually as you progress
-6. **💥 Obstacles Appear Slowly**: No obstacles in early game, they appear as you get better
-7. **🏃 Speed is Life**: Keep momentum high to travel further and score more points
+1. **⏱️ USE SLOW-MOTION**: When swinging, time SLOWS DOWN - use this to plan your release!
+2. **🎓 Start Safe**: Huge starting platform (60 units) - NO obstacles in first 100 units!
+3. **👀 Watch the Arc**: Dotted circle shows your swing path - use it to aim your release
+4. **🔥 Build Combos**: Chain swings together without touching ground to rack up combos
+5. **⚡ Manual Release**: Press SPACE while swinging to release early and control your trajectory
+6. **🎯 Auto-Aim**: Game finds the best anchor point automatically (easier at start!)
+7. **📊 Watch Difficulty**: Monitor the difficulty % - it increases gradually
+8. **🏃 Momentum is Key**: Keep speed high by releasing at the right angle
 
 ## 🚀 Installation
 
@@ -92,13 +94,23 @@ The game uses Python's built-in `curses` library, which is included with Python 
 
 ## 🎯 Game Mechanics
 
-### Swinging Physics
+### Swinging Physics & Slow-Motion Control
 
-The game implements realistic pendulum physics:
-- Gravity pulls you down constantly
+The game implements **forgiving** pendulum physics with a unique slow-motion mechanic:
+
+**Slow-Motion Swinging:**
+- ⏱️ **Time slows by 50%** when you're swinging
+- 🎯 Visual arc indicator shows your swing path
+- 💭 Gives you time to plan your next move
+- ⚡ Press SPACE to release and return to normal speed
+
+**Physics:**
+- Reduced gravity (0.25) for easier control
 - Web acts as a rope with fixed length
-- Momentum is conserved during swings
-- Release at the right moment to maximize distance
+- Momentum is boosted while swinging (+5% per swing)
+- 70% velocity multiplier while swinging for precise control
+- Less air resistance to maintain momentum
+- NO auto-release - you control everything!
 
 ### Scoring & Combos
 
@@ -112,11 +124,12 @@ The game implements realistic pendulum physics:
 The game features a smart difficulty curve that adapts as you play:
 
 **Tutorial Zone (0-100 units)**
-- Extra-wide starting platform (40 units wide)
+- MASSIVE starting platform (60 units wide, 40% of screen height!)
 - Very short buildings (8-12 units tall)
 - Buildings close together (8-12 gap)
-- **NO obstacles** - safe learning area
-- Extended web range for easier swinging
+- **NO obstacles** - completely safe learning area
+- Extended web range (up to 45 units) for easier swinging
+- **SLOW-MOTION** activates when swinging for practice
 
 **Easy (100-400 units, 0-20% difficulty)**
 - Short buildings (8-15 units)

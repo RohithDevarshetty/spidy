@@ -14,13 +14,14 @@ from typing import List, Tuple
 from enum import Enum
 
 # Game Constants
-GRAVITY = 0.35  # Slightly reduced for easier control
+GRAVITY = 0.25  # Further reduced for much easier control
 SWING_STRENGTH = 1.8
 MAX_ROPE_LENGTH = 30  # Increased for easier web shooting at start
 MIN_BUILDING_HEIGHT = 8
 MAX_BUILDING_HEIGHT = 35
 BUILDING_WIDTH = 10
-GAME_SPEED = 0.04
+GAME_SPEED = 0.03  # Base game speed (normal)
+SWING_SLOWMO_SPEED = 0.06  # Slower when swinging for better control
 PARTICLE_LIFETIME = 15
 MAX_PARTICLES = 50
 
@@ -169,11 +170,11 @@ class SpidermanGame:
         self.camera_x = 0
         self.frame_count = 0
 
-        # Create tutorial/starting platform - nice wide safe area
+        # Create tutorial/starting platform - HUGE safe area
         tutorial_building = Building(
             x=0,
-            height=12,  # Medium height, safe
-            width=40,   # Extra wide starting platform
+            height=int(self.height * 0.4),  # Tall enough to never hit ground easily
+            width=60,   # Extra wide starting platform
             has_obstacle=False,
             obstacle_height=0,
             color_variant=1
@@ -405,7 +406,7 @@ class SpidermanGame:
                 self.max_combo = max(self.max_combo, self.combo)
 
     def update_physics(self):
-        """Update game physics"""
+        """Update game physics with slow-motion swing control"""
         if self.state != GameState.PLAYING:
             return
 
@@ -414,7 +415,7 @@ class SpidermanGame:
         spidy.animation_frame = (spidy.animation_frame + 1) % 20
 
         if spidy.is_swinging:
-            # Swinging physics with pendulum motion
+            # Swinging physics with pendulum motion - MUCH MORE FORGIVING
             dx = spidy.x - spidy.swing_anchor_x
             dy = spidy.y - spidy.swing_anchor_y
             current_distance = math.sqrt(dx**2 + dy**2)
@@ -427,35 +428,36 @@ class SpidermanGame:
                     spidy.x = spidy.swing_anchor_x + spidy.rope_length * math.cos(angle)
                     spidy.y = spidy.swing_anchor_y + spidy.rope_length * math.sin(angle)
 
-                    # Tangential velocity
+                    # Tangential velocity with MORE momentum preservation
                     tangent_x = -math.sin(angle)
                     tangent_y = math.cos(angle)
 
                     v_tangent = spidy.vx * tangent_x + spidy.vy * tangent_y
 
-                    # Apply gravity along tangent
+                    # Apply LESS gravity for easier control
                     gravity_component = GRAVITY * math.cos(angle)
-                    v_tangent += gravity_component * 0.5
+                    v_tangent += gravity_component * 0.3  # Reduced from 0.5
 
-                    # Update velocity
-                    spidy.vx = v_tangent * tangent_x * 1.02
-                    spidy.vy = v_tangent * tangent_y * 1.02
+                    # Update velocity with MORE boost
+                    spidy.vx = v_tangent * tangent_x * 1.05  # Increased from 1.02
+                    spidy.vy = v_tangent * tangent_y * 1.05
 
-                # Auto-release at optimal point
-                if spidy.vy < -3 and dy < 0:
-                    spidy.is_swinging = False
-                    spidy.vy *= 1.1  # Boost on release
+                # DISABLE auto-release - let player control it
+                # if spidy.vy < -3 and dy < 0:
+                #     spidy.is_swinging = False
+                #     spidy.vy *= 1.1
 
             self.create_swing_trail()
         else:
-            # Free fall
-            spidy.vy += GRAVITY
-            spidy.vx *= 0.985  # Air resistance
+            # Free fall - slower gravity
+            spidy.vy += GRAVITY * 0.8  # Reduced gravity in free fall
+            spidy.vx *= 0.99  # Less air resistance to maintain momentum
             self.combo = 0
 
-        # Apply velocity
-        spidy.x += spidy.vx
-        spidy.y += spidy.vy
+        # Apply velocity - SLOWER when swinging for control
+        velocity_multiplier = 0.7 if spidy.is_swinging else 1.0
+        spidy.x += spidy.vx * velocity_multiplier
+        spidy.y += spidy.vy * velocity_multiplier
 
         # Smooth camera follow
         target_camera_x = spidy.x - self.width // 4
@@ -726,14 +728,28 @@ class SpidermanGame:
                             except:
                                 pass
 
-        # Draw web rope with style
+        # Draw web rope with style and swing arc indicator
         if self.spiderman.is_swinging:
             rope_x = int(self.spiderman.swing_anchor_x - self.camera_x)
             rope_y = int(self.spiderman.swing_anchor_y)
             spidy_x = int(self.spiderman.x - self.camera_x)
             spidy_y = int(self.spiderman.y)
 
-            # Draw web line
+            # Draw swing arc indicator (shows where you'll go)
+            rope_length = self.spiderman.rope_length
+            for arc_step in range(0, 360, 30):  # Draw arc points every 30 degrees
+                arc_angle = math.radians(arc_step)
+                arc_x = int(rope_x + rope_length * math.cos(arc_angle) - self.camera_x)
+                arc_y = int(rope_y + rope_length * math.sin(arc_angle))
+
+                if 0 <= arc_x < self.width - 1 and 0 <= arc_y < self.height - 1:
+                    try:
+                        self.stdscr.addstr(arc_y, arc_x, '·',
+                                         curses.color_pair(10) | curses.A_DIM)
+                    except:
+                        pass
+
+            # Draw web line - THICKER and more visible
             steps = max(abs(rope_x - spidy_x), abs(rope_y - spidy_y))
             if steps > 0:
                 for i in range(steps):
@@ -742,13 +758,11 @@ class SpidermanGame:
                     y = int(rope_y + (spidy_y - rope_y) * t)
 
                     if 0 <= x < self.width - 1 and 0 <= y < self.height - 1:
-                        # Varied web pattern
-                        if i % 3 == 0:
-                            char = '╱' if (spidy_x - rope_x) > 0 else '╲'
-                        elif i % 3 == 1:
-                            char = '│'
+                        # Varied web pattern - MORE VISIBLE
+                        if i % 2 == 0:
+                            char = '━'
                         else:
-                            char = '/'
+                            char = '─'
 
                         color = curses.color_pair(4) if i % 2 == 0 else curses.color_pair(10)
                         try:
@@ -756,7 +770,7 @@ class SpidermanGame:
                         except:
                             pass
 
-            # Draw anchor point
+            # Draw anchor point - LARGER
             if 0 <= rope_x < self.width - 1 and 0 <= rope_y < self.height - 1:
                 try:
                     self.stdscr.addstr(rope_y, rope_x, '⚓',
@@ -814,11 +828,13 @@ class SpidermanGame:
                 self.stdscr.addstr(row, 2, combo_text, color)
 
             # Tutorial message at the start
-            if self.spiderman.x < 150:  # Show for first part of game
+            if self.spiderman.x < 200:  # Show for first part of game
                 tutorial_y = self.height // 2 - 2
                 if self.spiderman.x < 80:
                     tutorial_msg = "🕷️  Press [SPACE] to shoot web and start swinging!"
                 elif self.spiderman.x < 150:
+                    tutorial_msg = "⏱️  Time SLOWS when swinging! Plan your move, then release!"
+                elif self.spiderman.x < 200:
                     tutorial_msg = "💡 Chain swings to build combos! Game gets harder as you go!"
                 else:
                     tutorial_msg = ""
@@ -827,6 +843,15 @@ class SpidermanGame:
                     x = max(0, (self.width - len(tutorial_msg)) // 2)
                     self.stdscr.addstr(tutorial_y, x, tutorial_msg,
                                      curses.color_pair(5) | curses.A_BOLD)
+
+            # Slow-mo indicator when swinging
+            if self.spiderman.is_swinging:
+                slowmo_text = "⏱️  SLOW-MO"
+                try:
+                    self.stdscr.addstr(0, self.width - 40, slowmo_text,
+                                     curses.color_pair(4) | curses.A_BOLD | curses.A_BLINK)
+                except:
+                    pass
 
             # Status
             status = "SWINGING!" if self.spiderman.is_swinging else "Free Fall"
@@ -841,7 +866,7 @@ class SpidermanGame:
             pass
 
     def run(self):
-        """Main game loop"""
+        """Main game loop with adaptive speed"""
         while True:
             try:
                 key = self.stdscr.getch()
@@ -877,7 +902,11 @@ class SpidermanGame:
             except:
                 pass
 
-            time.sleep(GAME_SPEED)
+            # SLOW MOTION when swinging for better control!
+            if self.state == GameState.PLAYING and self.spiderman and self.spiderman.is_swinging:
+                time.sleep(SWING_SLOWMO_SPEED)
+            else:
+                time.sleep(GAME_SPEED)
 
 
 def main(stdscr):
