@@ -16,7 +16,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/RohithDevarshetty/spidy",
-    py_modules=["spiderman_swing", "captain_america"],
+    py_modules=["spiderman_swing", "captain_america", "penalty_shootout"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
@@ -37,6 +37,7 @@ setup(
         "console_scripts": [
             "spidy=spiderman_swing:main_wrapper",
             "cap=captain_america:main_wrapper",
+            "penalty=penalty_shootout:main_wrapper",
         ],
     },
     install_requires=[],
