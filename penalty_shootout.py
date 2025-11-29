@@ -82,6 +82,7 @@ class PenaltyShootout:
         self.selected_zone = Zone.MID_CENTER
         self.power_level = 0.0
         self.is_charging_power = False
+        self.space_was_held = False  # Track if SPACE was held last frame
         self.pressure = 0.3  # Increases each round
 
         # Goalkeeper state
@@ -152,6 +153,7 @@ class PenaltyShootout:
         self.selected_zone = Zone.MID_CENTER
         self.power_level = 0.0
         self.is_charging_power = False
+        self.space_was_held = False
         self.shot_taken = False
         self.ball = None
         self.goalkeeper.is_diving = False
@@ -198,14 +200,22 @@ class PenaltyShootout:
                 elif key == curses.KEY_DOWN:
                     self.move_zone_selection(0, 1)
 
-                # Power charging
-                elif key == ord(' '):
+                # Power charging - SPACE key
+                if key == ord(' '):
+                    # SPACE is being held
                     if not self.is_charging_power:
                         self.is_charging_power = True
                         self.power_level = 0.0
+                    self.space_was_held = True
+                else:
+                    # SPACE was released - shoot!
+                    if self.space_was_held and self.is_charging_power:
+                        self.is_charging_power = False
+                        self.take_shot(is_chip=False)
+                    self.space_was_held = False
 
                 # Special shots
-                elif key in [ord('c'), ord('C')]:
+                if key in [ord('c'), ord('C')]:
                     # Chip shot
                     self.take_shot(is_chip=True)
 
@@ -214,7 +224,7 @@ class PenaltyShootout:
                 self.mode = GameMode.MENU
 
             # Next round after result shown
-            if self.result_timer > 0 and key == ord(' '):
+            if self.result_timer > 0 and key == ord(' ') and not self.space_was_held:
                 self.init_shooter_mode()
 
         elif self.mode == GameMode.GOALKEEPER:
@@ -363,10 +373,7 @@ class PenaltyShootout:
             if self.is_charging_power and not self.shot_taken:
                 self.power_level += 0.02
                 if self.power_level >= 1.0:
-                    self.power_level = 1.0
-                    # Auto-shoot at max power
-                    self.is_charging_power = False
-                    self.take_shot()
+                    self.power_level = 1.0  # Cap at 100%, wait for release
 
             # Ball movement
             if self.ball:
